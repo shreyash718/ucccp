@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sliding Window — CP Visualizer</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  :root { --accent: #ffd93d; }
+  .sw-cell {
+    min-width:50px; height:50px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--surface);
+    border:2px solid #333345;
+    border-radius:8px;
+    font-family:'Space Mono',monospace;
+    font-size:15px; font-weight:700;
+    position:relative; transition:all 0.35s;
+    color:var(--text);
+  }
+  .sw-cell .idx { position:absolute; bottom:-20px; font-size:9px; color:var(--muted); }
+  .sw-cell.window { border-color:#ffd93d; background:rgba(255,217,61,0.15); color:#ffd93d; }
+  .sw-cell.left-ptr { border-top:3px solid #6bcb77; }
+  .sw-cell.right-ptr { border-top:3px solid #ff6b6b; }
+  .window-sum {
+    font-family:'Space Mono',monospace;
+    font-size:22px; font-weight:700; color:#ffd93d;
+    margin:12px 0; display:flex; align-items:center; gap:12px;
+  }
+  .best-box {
+    background:rgba(107,203,119,0.1); border:1px solid rgba(107,203,119,0.3);
+    border-radius:8px; padding:10px 16px;
+    font-family:'Space Mono',monospace; font-size:13px; color:#6bcb77;
+    margin-top:8px;
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<nav>
+  <a href="/" class="nav-home">← Home</a>
+  <span class="nav-sep">/</span>
+  <span class="nav-title" style="color:#ffd93d">Sliding Window</span>
+</nav>
+<div class="container">
+  <div class="topic-header">
+    <div class="topic-badge">03 / 07</div>
+    <h1>Sliding<br>Window</h1>
+    <p class="topic-tagline">// maintain a window, slide it across the array</p>
+  </div>
+
+  <div class="section">
+    <div class="section-label" style="color:#ffd93d">Concept</div>
+    <h2>The Technique</h2>
+    <p>A <strong style="color:#ffd93d">sliding window</strong> maintains a contiguous subarray of fixed (or variable) size and "slides" it one step at a time. Instead of recomputing the whole window, we just <strong>add the new element</strong> and <strong>remove the leftmost element</strong>.</p>
+    <p>This turns O(n×k) brute force into <strong style="color:#ffd93d">O(n)</strong>.</p>
+    <ul>
+      <li><strong>Fixed window:</strong> window size k is constant — subtract left, add right</li>
+      <li><strong>Variable window:</strong> expand right until condition breaks, then shrink from left</li>
+    </ul>
+    <div class="complexity-row">
+      <div class="pill">Brute Force: <span style="color:#ff6b6b">O(n·k)</span></div>
+      <div class="pill">Sliding Window: <span style="color:#ffd93d">O(n)</span></div>
+    </div>
+    <pre><span class="cmt">// Max sum of any subarray of size k</span>
+<span class="kw">int</span> <span class="fn">maxSumK</span>(vector&lt;<span class="type">int</span>&gt;&amp; arr, <span class="type">int</span> k) {
+    <span class="type">int</span> n = arr.<span class="fn">size</span>(), winSum = <span class="num">0</span>;
+    <span class="kw">for</span>(<span class="type">int</span> i=<span class="num">0</span>; i&lt;k; i++) winSum += arr[i]; <span class="cmt">// first window</span>
+    <span class="type">int</span> maxSum = winSum;
+    <span class="kw">for</span>(<span class="type">int</span> i=k; i&lt;n; i++) {
+        winSum += arr[i];         <span class="cmt">// add new right</span>
+        winSum -= arr[i-k];       <span class="cmt">// remove old left</span>
+        maxSum = <span class="fn">max</span>(maxSum, winSum);
+    }
+    <span class="kw">return</span> maxSum;
+}</pre>
+  </div>
+
+  <div class="section">
+    <div class="section-label" style="color:#ffd93d">Practice Problem</div>
+    <h2>Maximum Sum Subarray of Size K</h2>
+    <p>Given <code style="color:#ffd93d">arr = [2, 1, 5, 1, 3, 2]</code> and <code style="color:#ffd93d">k = 3</code>, find the maximum sum of any contiguous subarray of size 3.</p>
+    <p><strong>Windows:</strong> [2,1,5]=8 → [1,5,1]=7 → [5,1,3]=9 → [1,3,2]=6 &nbsp;→&nbsp; <strong style="color:#6bcb77">Answer: 9</strong></p>
+    <pre><span class="cmt">// Trace for arr=[2,1,5,1,3,2], k=3:</span>
+<span class="cmt">// i=0..2: sum = 2+1+5 = 8, max = 8</span>
+<span class="cmt">// i=3:    sum = 8+1-2 = 7, max = 8</span>
+<span class="cmt">// i=4:    sum = 7+3-1 = 9, max = 9  ✓</span>
+<span class="cmt">// i=5:    sum = 9+2-5 = 6, max = 9</span></pre>
+  </div>
+
+  <div class="section">
+    <div class="section-label" style="color:#ffd93d">Live Visualizer</div>
+    <h2>Watch the Window Slide</h2>
+    <p>Step through the array and see the window move, the running sum update, and the best sum tracked.</p>
+    <div class="viz-area">
+      <div class="array-display" id="swArr" style="margin-bottom:24px"></div>
+      <div class="window-sum">Window Sum: <span id="wSum">—</span></div>
+      <div class="best-box" id="bestBox">Best sum so far: —</div>
+    </div>
+    <div class="viz-controls">
+      <button class="btn" style="border-color:#ffd93d44;color:#ffd93d;background:rgba(255,217,61,0.1)" id="stepBtn" onclick="step()">Step →</button>
+      <button class="btn secondary" onclick="resetSW()">Reset</button>
+    </div>
+    <div class="log-box" id="swLog">// press Step to start sliding the window</div>
+  </div>
+</div>
+
+<script>
+const arr = [2,1,5,1,3,2];
+const k = 3;
+let idx = k;
+let wsum = arr.slice(0,k).reduce((a,b)=>a+b,0);
+let best = wsum;
+let bestL = 0, bestR = k-1;
+let curL = 0, curR = k-1;
+let done = false;
+
+function renderSW(l, r, bl, br) {
+  document.getElementById('swArr').innerHTML = arr.map((v,i)=>{
+    let cls = 'cell';
+    if(i>=l && i<=r) cls += ' active';
+    return `<div class="${cls}">${v}<span class="cell-idx">[${i}]</span></div>`;
+  }).join('');
+}
+
+function updateDisplay() {
+  document.getElementById('wSum').textContent = wsum;
+  document.getElementById('bestBox').textContent = `Best sum so far: ${best} (window [${bestL}..${bestR}])`;
+  renderSW(curL, curR);
+}
+
+function step() {
+  if(done) { document.getElementById('swLog').textContent='✅ All windows explored! Maximum sum = '+best; return; }
+  if(idx === k) {
+    updateDisplay();
+    document.getElementById('swLog').textContent = `Initial window [0..${k-1}]: sum = ${wsum}`;
+    idx++;
+    if(idx > arr.length) done = true;
+    return;
+  }
+  const i = idx - 1;
+  wsum += arr[i];
+  wsum -= arr[i-k];
+  curL = i-k+1; curR = i;
+  if(wsum > best) { best = wsum; bestL = curL; bestR = curR; }
+  updateDisplay();
+  document.getElementById('swLog').textContent = `Slide: +arr[${i}]=${arr[i]}, -arr[${i-k}]=${arr[i-k]} → sum=${wsum}`;
+  idx++;
+  if(idx > arr.length) done = true;
+}
+
+function resetSW() {
+  idx = k; wsum = arr.slice(0,k).reduce((a,b)=>a+b,0);
+  best = wsum; bestL=0; bestR=k-1; curL=0; curR=k-1; done=false;
+  document.getElementById('wSum').textContent='—';
+  document.getElementById('bestBox').textContent='Best sum so far: —';
+  document.getElementById('swLog').textContent='// press Step to start sliding the window';
+  renderSW(-1,-1);
+}
+
+resetSW();
+</script>
+</body>
+</html>

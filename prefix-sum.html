@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prefix Sum — CP Visualizer</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  :root { --accent: #ff6b6b; }
+
+  /* Horizontal array row */
+  .h-row {
+    display:flex; align-items:stretch; border-radius:10px; overflow:hidden;
+    border:1px solid var(--border); margin:12px 0;
+  }
+  .h-row-label {
+    width:90px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:flex-end; padding-right:12px;
+    font-family:'Space Mono',monospace; font-size:11px; color:var(--muted);
+    background:var(--surface2); border-right:1px solid var(--border);
+  }
+  .h-cells { display:flex; flex:1; }
+  .h-cell {
+    flex:1; min-width:48px; padding:12px 6px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    border-right:1px solid var(--border); background:var(--surface);
+    font-family:'Space Mono',monospace; font-weight:700; font-size:15px;
+    transition:all 0.3s; position:relative; gap:4px;
+  }
+  .h-cell:last-child { border-right:none; }
+  .h-cell .h-idx { font-size:9px; color:var(--muted); font-weight:400; }
+  .h-cell.hl-range {
+    background:rgba(255,217,61,0.13); color:#ffd93d;
+    border-color:rgba(255,217,61,0.3);
+  }
+  .h-cell.hl-L {
+    background:rgba(255,107,107,0.15); color:#ff6b6b;
+    border-color:rgba(255,107,107,0.4);
+  }
+  .h-cell.hl-R {
+    background:rgba(107,203,119,0.15); color:#6bcb77;
+    border-color:rgba(107,203,119,0.4);
+  }
+  .h-cell.hl-Lm1 {
+    background:rgba(204,93,232,0.12); color:#cc5de8;
+    border-color:rgba(204,93,232,0.35);
+  }
+
+  /* Bracket overlay */
+  .bracket-area {
+    position:relative; height:36px; margin:0 0 8px;
+    /* rendered by JS as SVG */
+  }
+
+  /* Formula strip */
+  .formula-strip {
+    background:#0d0d14; border:1px solid var(--border); border-radius:10px;
+    padding:16px 20px; font-family:'Space Mono',monospace;
+    margin:16px 0;
+  }
+  .formula-line { font-size:12px; margin:4px 0; }
+  .formula-line.active { font-size:14px; color:#ffd93d; }
+  .formula-line .eq-label { color:var(--muted); }
+
+  .range-pill {
+    display:inline-block; padding:3px 12px; border-radius:20px;
+    font-family:'Space Mono',monospace; font-size:12px; font-weight:700;
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<nav>
+  <a href="/" class="nav-home">&#x2190; Home</a>
+  <span class="nav-sep">/</span>
+  <span class="nav-title" style="color:#ff6b6b">Prefix Sum</span>
+</nav>
+<div class="container">
+  <div class="topic-header">
+    <div class="topic-badge">02 / 07</div>
+    <h1>Prefix<br>Sum</h1>
+    <p class="topic-tagline">// precompute once, answer range queries in O(1)</p>
+  </div>
+
+  <div class="section">
+    <div class="section-label" style="color:#ff6b6b">Concept</div>
+    <h2>The Big Idea</h2>
+    <p>Asked "what is the sum of elements from index L to R?" naively costs O(n) per query. Build a prefix-sum array once in O(n), then answer every query in <strong style="color:#ff6b6b">O(1)</strong> with a single subtraction.</p>
+    <p><strong>prefix[i] = arr[0] + arr[1] + ... + arr[i]</strong></p>
+    <p>Then: <strong style="color:#ffd93d">sum(L, R) = prefix[R] &minus; prefix[L&minus;1]</strong> &nbsp;(prefix[-1] = 0)</p>
+    <div class="complexity-row">
+      <div class="pill">Build: <span style="color:#ff6b6b">O(n)</span></div>
+      <div class="pill">Each Query: <span style="color:#ff6b6b">O(1)</span></div>
+      <div class="pill">Without prefix: <span style="color:#888">O(n) per query</span></div>
+    </div>
+    <pre><span class="kw">#include</span> <span class="str">&lt;bits/stdc++.h&gt;</span>
+<span class="kw">using namespace</span> std;
+<span class="kw">int</span> <span class="fn">main</span>() {
+    vector&lt;<span class="type">int</span>&gt; arr = {<span class="num">3,1,4,1,5,9,2,6</span>};
+    <span class="type">int</span> n = arr.<span class="fn">size</span>();
+    vector&lt;<span class="type">int</span>&gt; pre(n);
+    pre[<span class="num">0</span>] = arr[<span class="num">0</span>];
+    <span class="kw">for</span>(<span class="type">int</span> i=<span class="num">1</span>; i&lt;n; i++)
+        pre[i] = pre[i-<span class="num">1</span>] + arr[i];
+    <span class="cmt">// sum(2,5) = pre[5] - pre[1] = 20 - 4 = 16? wait:</span>
+    <span class="cmt">// arr[2..5] = 4+1+5+9 = 19</span>
+    <span class="cmt">// pre[5]=23, pre[1]=4 → 23-4 = 19 ✓</span>
+    <span class="type">int</span> ans = pre[<span class="num">5</span>] - pre[<span class="num">1</span>];  <span class="cmt">// L=2, so pre[L-1]=pre[1]</span>
+    cout &lt;&lt; ans;  <span class="cmt">// 19</span>
+}</pre>
+  </div>
+
+  <div class="section">
+    <div class="section-label" style="color:#ff6b6b">Practice Problem</div>
+    <h2>Range Sum Queries</h2>
+    <p>Given <code style="color:#ff6b6b">arr = [3, 1, 4, 1, 5, 9, 2, 6]</code>, answer queries: sum(0,3), sum(2,5), sum(4,7).</p>
+    <p><strong>Without prefix sum:</strong> Each query scans up to n elements → slow for many queries.<br>
+       <strong>With prefix sum:</strong> Build once, then each answer is just <code style="color:#ffd93d">pre[R] - pre[L-1]</code>.</p>
+    <pre><span class="cmt">// pre = [3, 4, 8, 9, 14, 23, 25, 31]</span>
+<span class="cmt">// sum(0,3) = pre[3]        = 9    → 3+1+4+1</span>
+<span class="cmt">// sum(2,5) = pre[5]-pre[1] = 23-4 = 19 → 4+1+5+9</span>
+<span class="cmt">// sum(4,7) = pre[7]-pre[3] = 31-9 = 22 → 5+9+2+6</span></pre>
+  </div>
+
+  <div class="section">
+    <div class="section-label" style="color:#ff6b6b">Live Visualizer</div>
+    <h2>Query any range — see both arrays side by side</h2>
+    <p>Select L and R, then press Query. The highlighted cells and formula show exactly how the result is computed in one step.</p>
+
+    <div class="viz-area">
+      <!-- arr row -->
+      <div class="h-row" id="arrRow">
+        <div class="h-row-label">arr[]</div>
+        <div class="h-cells" id="arrCells"></div>
+      </div>
+      <!-- prefix row -->
+      <div class="h-row" id="preRow">
+        <div class="h-row-label">prefix[]</div>
+        <div class="h-cells" id="preCells"></div>
+      </div>
+
+      <!-- formula -->
+      <div class="formula-strip" id="formulaStrip">
+        <div class="formula-line eq-label">// set L and R and press Query</div>
+      </div>
+    </div>
+
+    <div class="viz-controls" style="margin-top:4px">
+      <span style="font-family:'Space Mono',monospace;font-size:12px;color:var(--muted)">L=</span>
+      <input type="number" id="qL" value="2" min="0" max="7">
+      <span style="font-family:'Space Mono',monospace;font-size:12px;color:var(--muted)">R=</span>
+      <input type="number" id="qR" value="5" min="0" max="7">
+      <button class="btn" style="border-color:#ff6b6b44;color:#ff6b6b;background:rgba(255,107,107,0.1)" onclick="query()">Query sum(L, R)</button>
+      <button class="btn secondary" onclick="resetQuery()">Reset</button>
+    </div>
+    <div class="log-box" id="psLog">// ready — enter L and R (0 to 7) and press Query</div>
+  </div>
+</div>
+
+<script>
+var arr=[3,1,4,1,5,9,2,6];
+var pre=[];
+pre[0]=arr[0];
+for(var i=1;i<arr.length;i++) pre[i]=pre[i-1]+arr[i];
+// pre = [3,4,8,9,14,23,25,31]
+
+function renderRows(rangeL, rangeR, hlL, hlR, hlLm1){
+  // rangeL..rangeR: yellow highlight in arr
+  // hlL = L index in pre (green), hlR = R index in pre (green/red), hlLm1 = L-1 in pre (purple)
+  var acells='', pcells='';
+  for(var i=0;i<arr.length;i++){
+    var acls='h-cell', pcls='h-cell';
+    if(rangeL>=0 && i>=rangeL && i<=rangeR) acls+=' hl-range';
+    // prefix highlights
+    if(i===hlLm1 && hlLm1>=0) pcls+=' hl-Lm1';
+    else if(i===hlR && hlR>=0) pcls+=' hl-L';
+    acells+='<div class="'+acls+'"><span class="h-idx">['+i+']</span>'+arr[i]+'</div>';
+    pcells+='<div class="'+pcls+'"><span class="h-idx">['+i+']</span>'+pre[i]+'</div>';
+  }
+  document.getElementById('arrCells').innerHTML=acells;
+  document.getElementById('preCells').innerHTML=pcells;
+}
+
+function query(){
+  var L=parseInt(document.getElementById('qL').value);
+  var R=parseInt(document.getElementById('qR').value);
+  if(isNaN(L)||isNaN(R)||L<0||R>7||L>R){
+    document.getElementById('psLog').textContent='Invalid range. L and R must be 0-7 and L <= R.';
+    return;
+  }
+  var ans, formula;
+  if(L===0){
+    ans=pre[R];
+    formula='sum(0,'+R+') = prefix['+R+'] = '+pre[R];
+    renderRows(L,R, -1, R, -1);
+    document.getElementById('formulaStrip').innerHTML=
+      '<div class="formula-line"><span class="eq-label">Range:</span> arr['+L+'..'+R+'] = '+arr.slice(L,R+1).join(' + ')+'</div>'+
+      '<div class="formula-line active">sum('+L+','+R+') = prefix['+R+'] = '+pre[R]+'</div>'+
+      '<div class="formula-line"><span class="eq-label">(L=0, so no subtraction needed)</span></div>';
+  } else {
+    ans=pre[R]-pre[L-1];
+    renderRows(L,R, L-1, R, L-1);
+    document.getElementById('formulaStrip').innerHTML=
+      '<div class="formula-line"><span class="eq-label">Range:</span> arr['+L+'..'+R+'] = '+arr.slice(L,R+1).join(' + ')+'</div>'+
+      '<div class="formula-line active">sum('+L+','+R+') = prefix['+R+'] &minus; prefix['+(L-1)+'] = '+pre[R]+' &minus; '+pre[L-1]+' = '+ans+'</div>'+
+      '<div class="formula-line"><span style="color:#ff6b6b">prefix['+R+']='+pre[R]+'</span> &nbsp;&#x2212;&nbsp; <span style="color:#cc5de8">prefix['+(L-1)+']='+pre[L-1]+'</span> &nbsp;=&nbsp; <strong style="color:#ffd93d">'+ans+'</strong></div>';
+  }
+  document.getElementById('psLog').textContent='sum('+L+', '+R+') = '+ans+' (elements: '+arr.slice(L,R+1).join('+')+'='+ans+')';
+}
+
+function resetQuery(){
+  renderRows(-1,-1,-1,-1,-1);
+  document.getElementById('formulaStrip').innerHTML='<div class="formula-line" style="color:var(--muted)">// set L and R and press Query</div>';
+  document.getElementById('psLog').textContent='// ready';
+}
+
+// initial render
+renderRows(-1,-1,-1,-1,-1);
+</script>
+</body>
+</html>

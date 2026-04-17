@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dynamic Programming — CP Visualizer</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  :root { --accent: #20c997; }
+  .tabs { display:flex; gap:4px; margin-bottom:24px; }
+  .tab-btn { padding:10px 24px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--muted); font-family:'Space Mono',monospace; font-size:12px; cursor:pointer; transition:all 0.2s; }
+  .tab-btn.active { background:rgba(32,201,151,0.15); border-color:rgba(32,201,151,0.4); color:#20c997; }
+  .tab-content { display:none; }
+  .tab-content.active { display:block; }
+  .dp-cell { min-width:64px; height:64px; display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--surface); border:2px solid #333345; border-radius:8px; font-family:'Space Mono',monospace; position:relative; transition:all 0.4s; color:var(--text); gap:3px; }
+  .dp-cell .label { font-size:9px; color:var(--muted); }
+  .dp-cell .val { font-size:15px; font-weight:700; }
+  .dp-cell.base { border-color:#ff922b; background:rgba(255,146,43,0.12); color:#ff922b; }
+  .dp-cell.current { border-color:#ffd93d; background:rgba(255,217,61,0.15); color:#ffd93d; box-shadow:0 0 16px rgba(255,217,61,0.3); }
+  .dp-cell.done { border-color:#20c997; background:rgba(32,201,151,0.12); color:#20c997; }
+  .dp-cell.empty { opacity:0.35; }
+  .stack-panel { background:#0d0d14; border:1px solid var(--border); border-radius:10px; padding:14px 16px; font-family:'Space Mono',monospace; font-size:12px; min-height:60px; max-height:200px; overflow-y:auto; }
+  .stack-entry { padding:4px 10px; margin:3px 0; border-radius:6px; border-left:3px solid transparent; transition:all 0.25s; white-space:nowrap; }
+  .stack-entry.calling  { border-color:#ffd93d; color:#ffd93d; background:rgba(255,217,61,0.07); }
+  .stack-entry.base     { border-color:#ff922b; color:#ff922b; background:rgba(255,146,43,0.07); }
+  .stack-entry.hit      { border-color:#cc5de8; color:#cc5de8; background:rgba(204,93,232,0.07); }
+  .stack-entry.returned { border-color:#20c997; color:#20c997; background:rgba(32,201,151,0.07); }
+  .cache-grid { display:flex; gap:6px; flex-wrap:wrap; margin-top:4px; }
+  .cache-cell { min-width:58px; height:58px; display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--surface); border:2px solid #333345; border-radius:8px; font-family:'Space Mono',monospace; transition:all 0.35s; gap:2px; }
+  .cache-cell .cl { font-size:9px; color:var(--muted); }
+  .cache-cell .cv { font-size:14px; font-weight:700; color:var(--muted); }
+  .cache-cell.filled { border-color:#20c997; background:rgba(32,201,151,0.12); }
+  .cache-cell.filled .cv { color:#20c997; }
+  .cache-cell.active-hit { border-color:#cc5de8; background:rgba(204,93,232,0.18); animation:flashHit 0.4s ease; }
+  .cache-cell.active-hit .cv { color:#cc5de8; }
+  .cache-cell.computing { border-color:#ffd93d; background:rgba(255,217,61,0.12); }
+  .cache-cell.computing .cv { color:#ffd93d; }
+  @keyframes flashHit { 0%,100%{transform:scale(1)} 50%{transform:scale(1.12)} }
+  .formula-box { background:#0d0d14; border:1px solid var(--border); border-radius:8px; padding:12px 16px; font-family:'Space Mono',monospace; font-size:13px; color:#ffd93d; margin-top:12px; }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<nav>
+  <a href="/" class="nav-home">&#x2190; Home</a>
+  <span class="nav-sep">/</span>
+  <span class="nav-title" style="color:#20c997">Dynamic Programming</span>
+</nav>
+<div class="container">
+  <div class="topic-header">
+    <div class="topic-badge">07 / 07</div>
+    <h1>Dynamic<br>Programming</h1>
+    <p class="topic-tagline">// remember subproblems, never recompute</p>
+  </div>
+
+  <div class="section">
+    <div class="section-label" style="color:#20c997">Concept</div>
+    <h2>What is DP?</h2>
+    <p><strong style="color:#20c997">Dynamic Programming</strong> breaks a problem into overlapping subproblems and stores results to avoid redundant computation. Two approaches:</p>
+    <ul>
+      <li><strong style="color:#cc5de8">Memoization (Top-Down):</strong> Recursive + cache. Compute only what you need, store so you never recompute.</li>
+      <li><strong style="color:#ffd93d">Tabulation (Bottom-Up):</strong> Iterative. Fill a dp[] table from base cases upward.</li>
+    </ul>
+    <p>Without DP, fib(5) recomputes fib(3) twice, fib(2) three times — exponential blowup! DP brings this to O(n).</p>
+    <div class="complexity-row">
+      <div class="pill">Naive fib(n): <span style="color:#ff6b6b">O(2^n)</span></div>
+      <div class="pill">DP fib(n): <span style="color:#20c997">O(n)</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label" style="color:#20c997">Practice Problem</div>
+    <h2>Fibonacci: Memoization &amp; Tabulation</h2>
+    <p>Compute <strong style="color:#ffd93d">fib(n)</strong>: fib(0)=0, fib(1)=1, fib(n) = fib(n-1) + fib(n-2).</p>
+    <p>Sequence: 0, 1, 1, 2, 3, 5, 8, <strong style="color:#6bcb77">13</strong>, 21, 34 ...</p>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('memo')">Memoization</button>
+      <button class="tab-btn" onclick="switchTab('tab')">Tabulation</button>
+    </div>
+    <div id="tab-memo" class="tab-content active">
+      <p><strong style="color:#cc5de8">Top-Down:</strong> Recursive fib() with cache. Each subproblem solved once; repeat calls return instantly from cache.</p>
+      <pre><span class="kw">#include</span> <span class="str">&lt;bits/stdc++.h&gt;</span>
+<span class="kw">using namespace</span> std;
+<span class="type">int</span> memo[<span class="num">50</span>];
+
+<span class="type">int</span> <span class="fn">fib</span>(<span class="type">int</span> n) {
+    <span class="kw">if</span>(n &lt;= <span class="num">1</span>) <span class="kw">return</span> n;
+    <span class="kw">if</span>(memo[n] != -<span class="num">1</span>) <span class="kw">return</span> memo[n];  <span class="cmt">// cache hit!</span>
+    memo[n] = <span class="fn">fib</span>(n-<span class="num">1</span>) + <span class="fn">fib</span>(n-<span class="num">2</span>);
+    <span class="kw">return</span> memo[n];
+}
+<span class="kw">int</span> <span class="fn">main</span>() {
+    <span class="fn">fill</span>(memo, memo+<span class="num">50</span>, -<span class="num">1</span>);
+    cout &lt;&lt; <span class="fn">fib</span>(<span class="num">7</span>);  <span class="cmt">// 13</span>
+}</pre>
+    </div>
+    <div id="tab-tab" class="tab-content">
+      <p><strong style="color:#ffd93d">Bottom-Up:</strong> Fill dp[] iteratively. dp[i] = dp[i-1] + dp[i-2]. No recursion needed.</p>
+      <pre><span class="kw">int</span> <span class="fn">fibTab</span>(<span class="type">int</span> n) {
+    <span class="kw">if</span>(n &lt;= <span class="num">1</span>) <span class="kw">return</span> n;
+    vector&lt;<span class="type">int</span>&gt; dp(n+<span class="num">1</span>);
+    dp[<span class="num">0</span>]=<span class="num">0</span>; dp[<span class="num">1</span>]=<span class="num">1</span>;
+    <span class="kw">for</span>(<span class="type">int</span> i=<span class="num">2</span>; i&lt;=n; i++)
+        dp[i] = dp[i-<span class="num">1</span>] + dp[i-<span class="num">2</span>];
+    <span class="kw">return</span> dp[n];
+}
+<span class="cmt">// dp: [0,1,1,2,3,5,8,13,...]</span></pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label" style="color:#20c997">Live Visualizer</div>
+    <h2>Watch DP Compute Fibonacci</h2>
+    <div class="tabs" style="margin-bottom:16px">
+      <button class="tab-btn active" id="vizTabMemo" onclick="switchViz('memo')">Memoization</button>
+      <button class="tab-btn" id="vizTabTab" onclick="switchViz('tab')">Tabulation</button>
+    </div>
+
+    <div id="viz-memo">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px">
+        Watch calls go <strong style="color:#ffd93d">down</strong>, results return <strong style="color:#20c997">up</strong>, and <strong style="color:#cc5de8">cache hits &#x26A1;</strong> skip recomputation entirely.
+      </p>
+      <div class="viz-area">
+        <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:8px">CACHE (memo[]):</div>
+        <div class="cache-grid" id="memoCacheGrid"></div>
+        <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);margin-top:16px;margin-bottom:6px">CALL LOG:</div>
+        <div class="stack-panel" id="memoCallLog"></div>
+      </div>
+      <div class="viz-controls" style="margin-top:12px">
+        <span style="font-family:'Space Mono',monospace;font-size:12px;color:var(--muted)">n=</span>
+        <input type="number" id="memoN" value="7" min="2" max="10">
+        <button class="btn" style="border-color:#cc5de844;color:#cc5de8;background:rgba(204,93,232,0.1)" onclick="memoStep()">Step &#x2192;</button>
+        <button class="btn secondary" onclick="resetMemo()">Reset</button>
+      </div>
+    </div>
+
+    <div id="viz-tab" style="display:none">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px">
+        <strong style="color:#ff922b">Orange</strong> = base case &nbsp;|&nbsp; <strong style="color:#ffd93d">Yellow</strong> = computing now &nbsp;|&nbsp; <strong style="color:#20c997">Green</strong> = done
+      </p>
+      <div class="viz-area">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:12px 0 28px" id="tabCells"></div>
+        <div class="formula-box" id="tabFormula">dp[0] = 0 (base)  |  dp[1] = 1 (base)</div>
+      </div>
+      <div class="viz-controls" style="margin-top:12px">
+        <span style="font-family:'Space Mono',monospace;font-size:12px;color:var(--muted)">n=</span>
+        <input type="number" id="tabN" value="8" min="2" max="12">
+        <button class="btn" style="border-color:#ffd93d44;color:#ffd93d;background:rgba(255,217,61,0.1)" onclick="tabStep()">Step &#x2192;</button>
+        <button class="btn secondary" onclick="resetTab()">Reset</button>
+      </div>
+    </div>
+
+    <div class="log-box" id="dpLog">// choose a mode above and press Step</div>
+  </div>
+</div>
+<script>
+function switchTab(t){
+  ['memo','tab'].forEach(x=>{ document.getElementById('tab-'+x).classList.toggle('active',x===t); });
+  document.querySelectorAll('.section .tabs .tab-btn').forEach((b,i)=>{ b.classList.toggle('active',(t==='memo'&&i===0)||(t==='tab'&&i===1)); });
+}
+function switchViz(t){
+  document.getElementById('vizTabMemo').classList.toggle('active',t==='memo');
+  document.getElementById('vizTabTab').classList.toggle('active',t==='tab');
+  document.getElementById('viz-memo').style.display=t==='memo'?'block':'none';
+  document.getElementById('viz-tab').style.display=t==='tab'?'block':'none';
+}
+
+/* MEMOIZATION */
+var memoSteps=[],memoPtr=0,memoN_cur=0;
+function buildMemoSteps(n){
+  var steps=[],cache=new Array(n+1).fill(-1);
+  cache[0]=0;cache[1]=1;
+  steps.push({type:'init',cache:cache.slice()});
+  function fib(k){
+    if(k<=1){ steps.push({type:'base',k,val:cache[k],cache:cache.slice()}); return cache[k]; }
+    if(cache[k]!==-1){ steps.push({type:'hit',k,val:cache[k],cache:cache.slice()}); return cache[k]; }
+    steps.push({type:'call',k,cache:cache.slice()});
+    var a=fib(k-1),b=fib(k-2);
+    cache[k]=a+b;
+    steps.push({type:'return',k,val:cache[k],a,b,cache:cache.slice()});
+    return cache[k];
+  }
+  fib(n);
+  return steps;
+}
+function renderCacheGrid(cache,computing,hitIdx){
+  var n=memoN_cur;
+  document.getElementById('memoCacheGrid').innerHTML=
+    Array.from({length:n+1},function(_,i){
+      var filled=cache[i]!==-1,cls='cache-cell';
+      if(i===hitIdx) cls+=' active-hit';
+      else if(i===computing) cls+=' computing';
+      else if(filled) cls+=' filled';
+      return '<div class="'+cls+'"><span class="cl">fib('+i+')</span><span class="cv">'+(filled?cache[i]:'?')+'</span></div>';
+    }).join('');
+}
+function appendLog(cls,text){
+  var box=document.getElementById('memoCallLog'),d=document.createElement('div');
+  d.className='stack-entry '+cls; d.textContent=text;
+  box.appendChild(d); box.scrollTop=box.scrollHeight;
+}
+function memoStep(){
+  if(!memoSteps.length){resetMemo();return;}
+  if(memoPtr>=memoSteps.length){
+    var last=memoSteps[memoSteps.length-1];
+    document.getElementById('dpLog').textContent='Done! fib('+memoN_cur+') = '+last.cache[memoN_cur];
+    return;
+  }
+  var s=memoSteps[memoPtr++];
+  if(s.type==='init'){ renderCacheGrid(s.cache,-1,-1); document.getElementById('dpLog').textContent='Init: fib(0)=0, fib(1)=1 set as base cases.'; }
+  else if(s.type==='call'){ renderCacheGrid(s.cache,s.k,-1); appendLog('calling','-> fib('+s.k+') called — not cached'); document.getElementById('dpLog').textContent='fib('+s.k+') not cached, needs fib('+(s.k-1)+') + fib('+(s.k-2)+')'; }
+  else if(s.type==='base'){ renderCacheGrid(s.cache,-1,-1); appendLog('base','* fib('+s.k+') = '+s.val+' [base case]'); document.getElementById('dpLog').textContent='Base case: fib('+s.k+') = '+s.val; }
+  else if(s.type==='hit'){ renderCacheGrid(s.cache,-1,s.k); appendLog('hit','CACHE HIT! fib('+s.k+') = '+s.val+' [skip!]'); document.getElementById('dpLog').textContent='Cache hit! fib('+s.k+')='+s.val+' already computed — instant return!'; }
+  else if(s.type==='return'){ renderCacheGrid(s.cache,-1,-1); appendLog('returned','fib('+s.k+') = '+s.a+'+'+s.b+' = '+s.val+' [stored]'); document.getElementById('dpLog').textContent='fib('+s.k+') = fib('+(s.k-1)+')+fib('+(s.k-2)+') = '+s.a+'+'+s.b+' = '+s.val+' stored in cache'; }
+}
+function resetMemo(){
+  memoN_cur=parseInt(document.getElementById('memoN').value)||7;
+  if(memoN_cur<2||memoN_cur>10){document.getElementById('dpLog').textContent='Use n=2..10';return;}
+  memoSteps=buildMemoSteps(memoN_cur); memoPtr=0;
+  document.getElementById('memoCallLog').innerHTML='';
+  var init=new Array(memoN_cur+1).fill(-1); init[0]=0;init[1]=1;
+  renderCacheGrid(init,-1,-1);
+  document.getElementById('dpLog').textContent='Ready — computing fib('+memoN_cur+'). Press Step.';
+}
+
+/* TABULATION */
+var tabDP=[],tabCur=0,tabN_c=0;
+function renderTabCells(){
+  document.getElementById('tabCells').innerHTML=
+    Array.from({length:tabN_c+1},function(_,i){
+      var filled=tabDP[i]!==null,cls='dp-cell';
+      if(i===tabCur&&filled&&i>=2) cls+=' current';
+      else if(i<=1&&filled) cls+=' base';
+      else if(filled) cls+=' done';
+      else cls+=' empty';
+      return '<div class="'+cls+'"><span class="label">dp['+i+']</span><span class="val">'+(filled?tabDP[i]:'?')+'</span></div>';
+    }).join('');
+}
+function resetTab(){
+  tabN_c=parseInt(document.getElementById('tabN').value)||8;
+  if(tabN_c<2||tabN_c>12){document.getElementById('dpLog').textContent='Use n=2..12';return;}
+  tabDP=new Array(tabN_c+1).fill(null); tabDP[0]=0;tabDP[1]=1; tabCur=1;
+  renderTabCells();
+  document.getElementById('tabFormula').textContent='dp[0] = 0 (base)  |  dp[1] = 1 (base)';
+  document.getElementById('dpLog').textContent='Ready — filling dp[0..'+tabN_c+']. Press Step.';
+}
+function tabStep(){
+  if(tabCur>=tabN_c){document.getElementById('dpLog').textContent='Done! fib('+tabN_c+') = dp['+tabN_c+'] = '+tabDP[tabN_c];return;}
+  tabCur++;
+  tabDP[tabCur]=tabDP[tabCur-1]+tabDP[tabCur-2];
+  renderTabCells();
+  document.getElementById('tabFormula').textContent='dp['+tabCur+'] = dp['+(tabCur-1)+'] + dp['+(tabCur-2)+'] = '+tabDP[tabCur-1]+' + '+tabDP[tabCur-2]+' = '+tabDP[tabCur];
+  document.getElementById('dpLog').textContent=(tabCur===tabN_c)?'Done! fib('+tabN_c+') = '+tabDP[tabN_c]:'Filled dp['+tabCur+'] = '+tabDP[tabCur];
+}
+
+resetMemo(); resetTab();
+</script>
+</body>
+</html>

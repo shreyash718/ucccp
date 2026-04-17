@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Binary Search — CP Visualizer</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  :root { --accent: #cc5de8; }
+  .bs-cell {
+    min-width:52px; height:52px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--surface);
+    border:2px solid #333345;
+    border-radius:8px;
+    font-family:'Space Mono',monospace;
+    font-size:14px; font-weight:700;
+    position:relative; transition:all 0.35s;
+    color:var(--text);
+  }
+  .bs-cell .idx { position:absolute; bottom:-20px; font-size:9px; color:var(--muted); }
+  .bs-cell.lo { border-color:#6bcb77; background:rgba(107,203,119,0.1); }
+  .bs-cell.hi { border-color:#ff6b6b; background:rgba(255,107,107,0.1); }
+  .bs-cell.mid { border-color:#cc5de8; background:rgba(204,93,232,0.2); color:#cc5de8; transform:scale(1.1); }
+  .bs-cell.out { opacity:0.25; }
+  .bs-cell.found { border-color:#ffd93d; background:rgba(255,217,61,0.2); color:#ffd93d; animation:pulse 0.5s ease; }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
+  .ptr-legend { display:flex; gap:16px; margin:8px 0; font-family:'Space Mono',monospace; font-size:11px; }
+  .ptr-legend span { display:flex; align-items:center; gap:6px; }
+  .dot { width:10px; height:10px; border-radius:50%; }
+  .range-bar {
+    height:6px; background:rgba(204,93,232,0.2);
+    border-radius:4px; margin:6px 0 20px;
+    position:relative; transition:all 0.35s;
+  }
+  .range-fill {
+    position:absolute; top:0; height:100%;
+    background:#cc5de8; border-radius:4px;
+    transition:all 0.35s;
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<nav>
+  <a href="/" class="nav-home">← Home</a>
+  <span class="nav-sep">/</span>
+  <span class="nav-title" style="color:#cc5de8">Binary Search</span>
+</nav>
+<div class="container">
+  <div class="topic-header">
+    <div class="topic-badge">06 / 07</div>
+    <h1>Binary<br>Search</h1>
+    <p class="topic-tagline">// halve the search space every step</p>
+  </div>
+
+  <div class="section">
+    <div class="section-label" style="color:#cc5de8">Concept</div>
+    <h2>Divide &amp; Conquer on Sorted Data</h2>
+    <p>Binary search finds a target in a <strong>sorted array</strong> by repeatedly halving the search space. Check the middle element — if it's too big, go left; too small, go right.</p>
+    <p>Each step eliminates <strong style="color:#cc5de8">half</strong> the remaining elements → O(log n) total steps.</p>
+    <div class="complexity-row">
+      <div class="pill">Linear Search: <span style="color:#ff6b6b">O(n)</span></div>
+      <div class="pill">Binary Search: <span style="color:#cc5de8">O(log n)</span></div>
+      <div class="pill">Requires: <span style="color:#cc5de8">sorted array</span></div>
+    </div>
+    <pre><span class="kw">int</span> <span class="fn">binarySearch</span>(vector&lt;<span class="type">int</span>&gt;&amp; arr, <span class="type">int</span> target) {
+    <span class="type">int</span> lo = <span class="num">0</span>, hi = arr.<span class="fn">size</span>() - <span class="num">1</span>;
+    <span class="kw">while</span>(lo &lt;= hi) {
+        <span class="type">int</span> mid = lo + (hi - lo) / <span class="num">2</span>; <span class="cmt">// avoids overflow</span>
+        <span class="kw">if</span>(arr[mid] == target) <span class="kw">return</span> mid;
+        <span class="kw">else if</span>(arr[mid] &lt; target) lo = mid + <span class="num">1</span>;
+        <span class="kw">else</span> hi = mid - <span class="num">1</span>;
+    }
+    <span class="kw">return</span> -<span class="num">1</span>; <span class="cmt">// not found</span>
+}</pre>
+    <p><strong>Pro tip:</strong> C++ STL has <code style="color:#cc5de8">lower_bound</code> and <code style="color:#cc5de8">upper_bound</code> — use them in contests!</p>
+  </div>
+
+  <div class="section">
+    <div class="section-label" style="color:#cc5de8">Practice Problem</div>
+    <h2>Search in Sorted Array</h2>
+    <p>Find <code style="color:#ffd93d">target = 23</code> in <code style="color:#cc5de8">arr = [2, 5, 8, 12, 16, 23, 38, 45, 72]</code></p>
+    <pre><span class="cmt">// lo=0, hi=8 → mid=4, arr[4]=16 &lt; 23 → lo=5</span>
+<span class="cmt">// lo=5, hi=8 → mid=6, arr[6]=38 &gt; 23 → hi=5</span>
+<span class="cmt">// lo=5, hi=5 → mid=5, arr[5]=23 == 23 → FOUND ✅</span>
+<span class="cmt">// Only 3 steps for 9 elements! (log₂9 ≈ 3.17)</span></pre>
+  </div>
+
+  <div class="section">
+    <div class="section-label" style="color:#cc5de8">Live Visualizer</div>
+    <h2>Step-through Binary Search</h2>
+    <p>Search for a target in the sorted array. Watch lo, mid, hi narrow down.</p>
+    <div class="viz-area">
+      <div class="ptr-legend">
+        <span><div class="dot" style="background:#6bcb77"></div> lo</span>
+        <span><div class="dot" style="background:#cc5de8"></div> mid</span>
+        <span><div class="dot" style="background:#ff6b6b"></div> hi</span>
+        <span><div class="dot" style="background:#ffd93d"></div> found!</span>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin:16px 0 24px" id="bsArr"></div>
+      <div style="font-family:'Space Mono',monospace;font-size:13px;color:var(--muted)" id="bsState"></div>
+    </div>
+    <div class="viz-controls">
+      <span style="font-family:'Space Mono',monospace;font-size:12px;color:var(--muted)">target=</span>
+      <input type="number" id="bsTarget" value="23">
+      <button class="btn" style="border-color:#cc5de844;color:#cc5de8;background:rgba(204,93,232,0.1)" onclick="bsStep()">Step →</button>
+      <button class="btn secondary" onclick="resetBS()">Reset</button>
+    </div>
+    <div class="log-box" id="bsLog">// set target and press Step</div>
+  </div>
+</div>
+
+<script>
+const arr = [2,5,8,12,16,23,38,45,72];
+let lo, hi, done, target;
+
+function renderBS(mid, found=false) {
+  document.getElementById('bsArr').innerHTML = arr.map((v,i)=>{
+    let cls = 'bs-cell';
+    if(found && i===mid) cls += ' found';
+    else if(i===mid) cls += ' mid';
+    else if(i===lo) cls += ' lo';
+    else if(i===hi) cls += ' hi';
+    else if(i<lo||i>hi) cls += ' out';
+    return `<div class="${cls}">${v}<span class="idx">[${i}]</span></div>`;
+  }).join('');
+  if(!found)
+    document.getElementById('bsState').textContent = `lo=${lo}  mid=${mid}  hi=${hi}  →  arr[mid]=${arr[mid]}`;
+}
+
+function bsStep() {
+  if(done) return;
+  target = parseInt(document.getElementById('bsTarget').value)||0;
+  if(lo > hi) {
+    document.getElementById('bsLog').textContent = `❌ ${target} not found in array!`;
+    done = true; return;
+  }
+  const mid = lo + Math.floor((hi-lo)/2);
+  if(arr[mid] === target) {
+    renderBS(mid, true);
+    document.getElementById('bsState').textContent = `✅ Found ${target} at index ${mid}!`;
+    document.getElementById('bsLog').textContent = `✅ Target ${target} found at index [${mid}] in ${stepCount} step(s)!`;
+    done = true; return;
+  }
+  stepCount++;
+  if(arr[mid] < target) {
+    document.getElementById('bsLog').textContent = `arr[${mid}]=${arr[mid]} < ${target} → move lo to ${mid+1}`;
+    renderBS(mid);
+    lo = mid+1;
+  } else {
+    document.getElementById('bsLog').textContent = `arr[${mid}]=${arr[mid]} > ${target} → move hi to ${mid-1}`;
+    renderBS(mid);
+    hi = mid-1;
+  }
+}
+
+let stepCount = 0;
+function resetBS() {
+  target = parseInt(document.getElementById('bsTarget').value)||0;
+  lo=0; hi=arr.length-1; done=false; stepCount=0;
+  const mid = lo+Math.floor((hi-lo)/2);
+  renderBS(mid);
+  document.getElementById('bsLog').textContent='// press Step to begin';
+}
+
+resetBS();
+</script>
+</body>
+</html>

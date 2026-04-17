@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vector / Dynamic Array — CP Visualizer</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  :root { --accent: #00d4ff; }
+  .vec-wrapper { display: flex; gap: 4px; align-items: flex-end; flex-wrap: wrap; margin: 16px 0 28px; }
+  .vec-cell {
+    width: 52px; height: 52px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface);
+    border: 2px solid #00d4ff44;
+    border-radius: 8px;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 16px;
+    position: relative;
+    transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    color: #00d4ff;
+  }
+  .vec-cell.new {
+    animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    border-color: #00d4ff;
+    background: rgba(0,212,255,0.15);
+  }
+  .vec-cell.removing {
+    animation: popOut 0.3s ease forwards;
+  }
+  @keyframes popIn {
+    from { transform: scale(0) translateY(20px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+  }
+  @keyframes popOut {
+    to { transform: scale(0); opacity: 0; }
+  }
+  .vec-cell .idx {
+    position: absolute; bottom: -18px;
+    font-size: 9px; color: var(--muted);
+    font-family: 'Space Mono', monospace;
+  }
+  .size-bar {
+    display: flex; gap: 8px; align-items: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px; color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .size-bar span { color: #00d4ff; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<nav>
+  <a href="/" class="nav-home">← Home</a>
+  <span class="nav-sep">/</span>
+  <span class="nav-title">Vector / Dynamic Array</span>
+</nav>
+<div class="container">
+  <div class="topic-header">
+    <div class="topic-badge">01 / 07</div>
+    <h1>Vector &amp;<br>Dynamic Array</h1>
+    <p class="topic-tagline">// auto-resizing array — the workhorse of CP</p>
+  </div>
+
+  <!-- EXPLANATION -->
+  <div class="section">
+    <div class="section-label">Concept</div>
+    <h2>What is a Vector?</h2>
+    <p>A <strong style="color:#00d4ff">vector</strong> (or dynamic array) is an array that can grow or shrink in size automatically. Unlike a fixed-size array, you don't need to know the size in advance.</p>
+    <p>Internally, when the array is full it allocates a new block (usually <strong>2× the current capacity</strong>), copies existing elements, and frees the old block. This "doubling" strategy gives <strong>amortized O(1)</strong> push_back.</p>
+    <ul>
+      <li><code style="color:#00d4ff">push_back(x)</code> — append element → O(1) amortized</li>
+      <li><code style="color:#00d4ff">pop_back()</code> — remove last element → O(1)</li>
+      <li><code style="color:#00d4ff">v[i]</code> — random access → O(1)</li>
+      <li><code style="color:#00d4ff">size()</code> — current count → O(1)</li>
+      <li><code style="color:#00d4ff">clear()</code> — remove all elements → O(n)</li>
+    </ul>
+    <div class="complexity-row">
+      <div class="pill">Access: <span>O(1)</span></div>
+      <div class="pill">Push: <span>O(1) amortized</span></div>
+      <div class="pill">Pop: <span>O(1)</span></div>
+      <div class="pill">Space: <span>O(n)</span></div>
+    </div>
+    <pre><span class="kw">#include</span> <span class="str">&lt;bits/stdc++.h&gt;</span>
+<span class="kw">using namespace</span> std;
+<span class="kw">int</span> <span class="fn">main</span>() {
+    vector&lt;<span class="type">int</span>&gt; v;           <span class="cmt">// empty vector</span>
+    v.<span class="fn">push_back</span>(<span class="num">10</span>);        <span class="cmt">// [10]</span>
+    v.<span class="fn">push_back</span>(<span class="num">20</span>);        <span class="cmt">// [10, 20]</span>
+    v.<span class="fn">push_back</span>(<span class="num">30</span>);        <span class="cmt">// [10, 20, 30]</span>
+    v.<span class="fn">pop_back</span>();           <span class="cmt">// [10, 20]</span>
+    cout &lt;&lt; v[<span class="num">0</span>];           <span class="cmt">// prints 10</span>
+    cout &lt;&lt; v.<span class="fn">size</span>();       <span class="cmt">// prints 2</span>
+    <span class="cmt">// iterate</span>
+    <span class="kw">for</span>(<span class="type">int</span> x : v) cout &lt;&lt; x &lt;&lt; <span class="str">" "</span>;
+}</pre>
+  </div>
+
+  <!-- QUESTION -->
+  <div class="section">
+    <div class="section-label">Practice Problem</div>
+    <h2>Find Second Largest Element</h2>
+    <p>Given an array of integers, find the second largest element. Use a vector to store input, then iterate to find the answer.</p>
+    <p><strong>Input:</strong> <code style="color:#00d4ff">[3, 1, 4, 1, 5, 9, 2, 6]</code> &nbsp;→&nbsp; <strong>Output:</strong> <code style="color:#6bcb77">6</code></p>
+    <pre><span class="kw">#include</span> <span class="str">&lt;bits/stdc++.h&gt;</span>
+<span class="kw">using namespace</span> std;
+<span class="kw">int</span> <span class="fn">main</span>() {
+    vector&lt;<span class="type">int</span>&gt; v = {<span class="num">3,1,4,1,5,9,2,6</span>};
+    <span class="type">int</span> first = INT_MIN, second = INT_MIN;
+    <span class="kw">for</span>(<span class="type">int</span> x : v) {
+        <span class="kw">if</span>(x > first) {
+            second = first;
+            first = x;
+        } <span class="kw">else if</span>(x > second &amp;&amp; x != first) {
+            second = x;
+        }
+    }
+    cout &lt;&lt; <span class="str">"Second Largest: "</span> &lt;&lt; second; <span class="cmt">// 6</span>
+}</pre>
+  </div>
+
+  <!-- VISUALIZER -->
+  <div class="section">
+    <div class="section-label">Live Visualizer</div>
+    <h2>Interactive Vector</h2>
+    <p>Push values, pop them, and watch the vector grow and shrink in real time.</p>
+    <div class="viz-area">
+      <div class="size-bar">size: <span id="vecSize">0</span> &nbsp;|&nbsp; capacity: <span id="vecCap">0</span></div>
+      <div class="vec-wrapper" id="vecDisplay"></div>
+      <div style="height:20px"></div>
+    </div>
+    <div class="viz-controls">
+      <input type="number" id="pushVal" placeholder="val" value="42">
+      <button class="btn" onclick="doPush()">push_back</button>
+      <button class="btn" onclick="doPop()">pop_back</button>
+      <button class="btn secondary" onclick="clearVec()">clear</button>
+    </div>
+    <div class="log-box" id="vecLog">// ready — try pushing some values!</div>
+  </div>
+</div>
+
+<script>
+let vec = [];
+let cap = 0;
+
+function render() {
+  const d = document.getElementById('vecDisplay');
+  document.getElementById('vecSize').textContent = vec.length;
+  document.getElementById('vecCap').textContent = cap;
+  d.innerHTML = vec.map((v,i) => `
+    <div class="vec-cell">
+      ${v}
+      <span class="idx">[${i}]</span>
+    </div>
+  `).join('');
+  if (cap > vec.length) {
+    for (let i = vec.length; i < cap; i++) {
+      d.innerHTML += `<div class="vec-cell" style="opacity:0.2;border-style:dashed;color:var(--muted)">_<span class="idx">[${i}]</span></div>`;
+    }
+  }
+}
+
+function doPush() {
+  const val = parseInt(document.getElementById('pushVal').value) || 0;
+  if (vec.length >= cap) {
+    cap = cap === 0 ? 1 : cap * 2;
+    log(`📦 Capacity doubled → ${cap} (reallocation!)`);
+  }
+  vec.push(val);
+  render();
+  // flash last cell
+  setTimeout(() => {
+    const cells = document.querySelectorAll('.vec-cell');
+    if (cells[vec.length-1]) cells[vec.length-1].classList.add('new');
+  }, 10);
+  log(`✅ push_back(${val}) → size=${vec.length}, cap=${cap}`);
+}
+
+function doPop() {
+  if (vec.length === 0) { log('⚠️ Vector is empty! Nothing to pop.'); return; }
+  const val = vec.pop();
+  render();
+  log(`🗑️ pop_back() removed ${val} → size=${vec.length}`);
+}
+
+function clearVec() {
+  vec = []; cap = 0;
+  render();
+  log('🧹 clear() — vector is now empty');
+}
+
+function log(msg) {
+  document.getElementById('vecLog').textContent = msg;
+}
+
+render();
+</script>
+</body>
+</html>

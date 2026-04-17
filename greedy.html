@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Greedy — CP Visualizer</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  :root { --accent: #ff922b; }
+  .coin-row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:12px 0; }
+  .coin {
+    width:56px; height:56px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Mono',monospace; font-weight:700; font-size:14px;
+    border:3px solid #333345;
+    transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    background:var(--surface); color:var(--text);
+    cursor:default;
+  }
+  .coin.used { border-color:#ff922b; background:rgba(255,146,43,0.2); color:#ff922b; transform:scale(1.1); }
+  .coin.dim { opacity:0.3; }
+  .amount-display {
+    font-family:'Space Mono',monospace;
+    font-size:2rem; font-weight:700;
+    color:#ff922b; margin:8px 0;
+  }
+  .coins-used { font-family:'Space Mono',monospace; font-size:13px; color:#6bcb77; margin:6px 0; }
+  .bar-container { margin:16px 0; }
+  .job-bar {
+    display:flex; align-items:center; gap:12px; margin:6px 0;
+    font-family:'Space Mono',monospace; font-size:12px;
+  }
+  .bar-fill {
+    height:28px; border-radius:6px;
+    display:flex; align-items:center; padding:0 10px;
+    font-weight:700; font-size:12px; color:#0a0a0f;
+    transition:all 0.4s;
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<nav>
+  <a href="/" class="nav-home">← Home</a>
+  <span class="nav-sep">/</span>
+  <span class="nav-title" style="color:#ff922b">Greedy</span>
+</nav>
+<div class="container">
+  <div class="topic-header">
+    <div class="topic-badge">05 / 07</div>
+    <h1>Greedy<br>Algorithm</h1>
+    <p class="topic-tagline">// always pick the locally optimal choice</p>
+  </div>
+
+  <div class="section">
+    <div class="section-label" style="color:#ff922b">Concept</div>
+    <h2>What is Greedy?</h2>
+    <p>A <strong style="color:#ff922b">greedy algorithm</strong> makes the best possible choice at each step without reconsidering past choices. It hopes that locally optimal decisions lead to a globally optimal solution.</p>
+    <p><strong>When does greedy work?</strong> When the problem has the <em>greedy choice property</em> — local optimal → global optimal. Classic examples:</p>
+    <ul>
+      <li>Coin change (standard denominations)</li>
+      <li>Activity selection / interval scheduling</li>
+      <li>Huffman encoding</li>
+      <li>Kruskal's MST (minimum spanning tree)</li>
+    </ul>
+    <p style="color:#ff6b6b">⚠️ Greedy doesn't always work! For coin change with arbitrary denominations, you need DP.</p>
+    <pre><span class="cmt">// Coin Change (Greedy — works for standard coins)</span>
+<span class="kw">int</span> <span class="fn">minCoins</span>(<span class="type">int</span> amount) {
+    vector&lt;<span class="type">int</span>&gt; coins = {<span class="num">500,200,100,50,20,10,5,2,1</span>};
+    <span class="type">int</span> count = <span class="num">0</span>;
+    <span class="kw">for</span>(<span class="type">int</span> c : coins) {
+        count += amount / c;   <span class="cmt">// use as many as possible</span>
+        amount %= c;           <span class="cmt">// remainder</span>
+    }
+    <span class="kw">return</span> count;
+}</pre>
+  </div>
+
+  <div class="section">
+    <div class="section-label" style="color:#ff922b">Practice Problem</div>
+    <h2>Minimum Coins to Make Change</h2>
+    <p>Given coins = <code style="color:#ff922b">[1, 2, 5, 10, 20, 50, 100, 200]</code> (Indian paisa-style), find the minimum coins to make <strong style="color:#ffd93d">amount = 93</strong>.</p>
+    <p><strong>Greedy:</strong> 50+20+20+2+1 = 5 coins ✅</p>
+    <pre><span class="cmt">// amount=93</span>
+<span class="cmt">// 93 / 50 = 1 coin → rem = 43</span>
+<span class="cmt">// 43 / 20 = 2 coins → rem = 3</span>
+<span class="cmt">// 3  / 2  = 1 coin  → rem = 1</span>
+<span class="cmt">// 1  / 1  = 1 coin  → rem = 0</span>
+<span class="cmt">// Total = 5 coins ✅</span></pre>
+  </div>
+
+  <div class="section">
+    <div class="section-label" style="color:#ff922b">Live Visualizer</div>
+    <h2>Greedy Coin Change</h2>
+    <p>Enter an amount and watch the greedy algorithm pick the largest coins first.</p>
+    <div class="viz-area">
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px">
+        <input type="number" id="amtInput" value="93" min="1" max="999" style="width:100px">
+        <button class="btn" style="border-color:#ff922b44;color:#ff922b;background:rgba(255,146,43,0.1)" onclick="runGreedy()">Run Greedy</button>
+      </div>
+      <div class="amount-display" id="remDisplay">Amount: —</div>
+      <div class="coins-used" id="coinsUsedDisplay"></div>
+      <div class="coin-row" id="coinRow"></div>
+    </div>
+    <div class="log-box" id="greedyLog">// enter amount and press Run Greedy</div>
+  </div>
+</div>
+
+<script>
+const coins = [200,100,50,20,10,5,2,1];
+const labels = ['200','100','50','20','10','5','2','1'];
+
+function renderCoins(used) {
+  document.getElementById('coinRow').innerHTML = coins.map((c,i)=>{
+    const cnt = used[i]||0;
+    let cls = 'coin';
+    if(cnt>0) cls += ' used';
+    else cls += ' dim';
+    return `<div class="${cls}">₹${c}${cnt>0?`<br><small>×${cnt}`:''}${cnt>0?'</small>':''}</div>`;
+  }).join('');
+}
+
+function runGreedy() {
+  let amount = parseInt(document.getElementById('amtInput').value)||0;
+  if(amount<=0||amount>999){document.getElementById('greedyLog').textContent='⚠️ Enter amount 1-999'; return;}
+  const orig = amount;
+  const used = new Array(coins.length).fill(0);
+  let steps = [];
+  for(let i=0;i<coins.length;i++){
+    if(amount>=coins[i]){
+      used[i] = Math.floor(amount/coins[i]);
+      steps.push(`₹${coins[i]} × ${used[i]}`);
+      amount = amount % coins[i];
+    }
+  }
+  const total = used.reduce((a,b)=>a+b,0);
+  renderCoins(used);
+  document.getElementById('remDisplay').textContent = `Amount: ${orig}`;
+  document.getElementById('coinsUsedDisplay').textContent = `Coins: ${steps.join(' + ')} = ${total} coins`;
+  document.getElementById('greedyLog').textContent = `✅ Minimum coins for ${orig} = ${total}`;
+}
+
+renderCoins([]);
+</script>
+</body>
+</html>

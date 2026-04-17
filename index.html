@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CP Visualizer — Competitive Programming for Juniors</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --border: #1e1e2e;
+    --text: #e8e8f0;
+    --muted: #6b6b8a;
+    --accent: #00d4ff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+  .hero {
+    position: relative; z-index: 1;
+    text-align: center;
+    padding: 80px 20px 40px;
+  }
+  .badge {
+    display: inline-block;
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.3);
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 6px 16px;
+    border-radius: 20px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  h1 {
+    font-size: clamp(2.5rem, 7vw, 5rem);
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #fff 30%, rgba(255,255,255,0.4));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  h1 span {
+    background: linear-gradient(90deg, #00d4ff, #cc5de8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 1.1rem;
+    font-weight: 400;
+    margin-bottom: 60px;
+    font-family: 'Space Mono', monospace;
+  }
+  .topics-grid {
+    position: relative; z-index: 1;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 20px 80px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .topic-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    text-decoration: none;
+    color: var(--text);
+    display: block;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .topic-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--card-color);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .topic-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--card-color);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  }
+  .topic-card:hover::before { opacity: 1; }
+  .topic-icon {
+    font-size: 2rem;
+    margin-bottom: 12px;
+    display: block;
+  }
+  .topic-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+  .topic-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+  .topic-desc {
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    line-height: 1.6;
+  }
+  .arrow {
+    position: absolute;
+    bottom: 24px; right: 24px;
+    font-size: 1.2rem;
+    color: var(--card-color);
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .topic-card:hover .arrow { opacity: 1; transform: translate(3px, -3px); }
+  footer {
+    position: relative; z-index: 1;
+    text-align: center;
+    padding: 20px;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    border-top: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="hero">
+  <div class="badge">// cp session — interactive visualizer</div>
+  <h1>Master <span>Algorithms</span><br>Step by Step</h1>
+  <p class="subtitle">7 topics · explanations + questions + live visualizations</p>
+</div>
+
+<div class="topics-grid">
+  <a href="vector.html" class="topic-card" style="--card-color:#00d4ff">
+    <span class="topic-icon">📦</span>
+    <div class="topic-num">01 / 07</div>
+    <div class="topic-title">Vector / Dynamic Array</div>
+    <div class="topic-desc">push, pop, resize, iteration</div>
+    <span class="arrow">↗</span>
+  </a>
+  <a href="prefix-sum.html" class="topic-card" style="--card-color:#ff6b6b">
+    <span class="topic-icon">∑</span>
+    <div class="topic-num">02 / 07</div>
+    <div class="topic-title">Prefix Sum</div>
+    <div class="topic-desc">range queries in O(1)</div>
+    <span class="arrow">↗</span>
+  </a>
+  <a href="sliding-window.html" class="topic-card" style="--card-color:#ffd93d">
+    <span class="topic-icon">🪟</span>
+    <div class="topic-num">03 / 07</div>
+    <div class="topic-title">Sliding Window</div>
+    <div class="topic-desc">subarray problems optimized</div>
+    <span class="arrow">↗</span>
+  </a>
+  <a href="two-pointer.html" class="topic-card" style="--card-color:#6bcb77">
+    <span class="topic-icon">👆</span>
+    <div class="topic-num">04 / 07</div>
+    <div class="topic-title">Two Pointer</div>
+    <div class="topic-desc">converging from both ends</div>
+    <span class="arrow">↗</span>
+  </a>
+  <a href="greedy.html" class="topic-card" style="--card-color:#ff922b">
+    <span class="topic-icon">🤑</span>
+    <div class="topic-num">05 / 07</div>
+    <div class="topic-title">Greedy Algorithm</div>
+    <div class="topic-desc">locally optimal choices</div>
+    <span class="arrow">↗</span>
+  </a>
+  <a href="binary-search.html" class="topic-card" style="--card-color:#cc5de8">
+    <span class="topic-icon">🔍</span>
+    <div class="topic-num">06 / 07</div>
+    <div class="topic-title">Binary Search</div>
+    <div class="topic-desc">divide & conquer on sorted data</div>
+    <span class="arrow">↗</span>
+  </a>
+  <a href="dp.html" class="topic-card" style="--card-color:#20c997">
+    <span class="topic-icon">🧠</span>
+    <div class="topic-num">07 / 07</div>
+    <div class="topic-title">Dynamic Programming</div>
+    <div class="topic-desc">memoization + tabulation</div>
+    <span class="arrow">↗</span>
+  </a>
+</div>
+<footer>built for your CP session · localhost:3000</footer>
+</body>
+</html>
